@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import logging
 import queue
 from collections import deque
 from dataclasses import dataclass
 
+_log = logging.getLogger(__name__)
 
 
 @dataclass
@@ -37,8 +39,7 @@ class MicStream:
 
     def _callback(self, indata, frames, time_info, status):
         if status:
-            # Keep lightweight logging in callback.
-            print(f"[audio] callback status={status}")
+            _log.warning("audio callback status: %s", status)
         if frames != self.config.frame_samples:
             return
 
