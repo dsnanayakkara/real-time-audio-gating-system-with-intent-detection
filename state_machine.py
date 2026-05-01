@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from enum import Enum
+
+_log = logging.getLogger(__name__)
 
 
 class GateState(str, Enum):
@@ -26,16 +29,14 @@ class GateStateMachine:
 
         if self.state == GateState.CLOSED:
             if keyword == "start":
+                self.last_speech_ms = now_ms
                 self.state = GateState.OPEN
-                print(f"[state] {self.state} (keyword=start)")
+                _log.info("gate OPEN (keyword=start)")
         else:  # OPEN
             if keyword == "stop":
                 self.state = GateState.CLOSED
-                print(f"[state] {self.state} (keyword=stop)")
+                _log.info("gate CLOSED (keyword=stop)")
             elif now_ms - self.last_speech_ms > self.config.silence_timeout_ms:
                 self.state = GateState.CLOSED
-                print(
-                    f"[state] {self.state} "
-                    f"(silence>{self.config.silence_timeout_ms}ms)"
-                )
+                _log.info("gate CLOSED (silence>%dms)", self.config.silence_timeout_ms)
         return self.state
