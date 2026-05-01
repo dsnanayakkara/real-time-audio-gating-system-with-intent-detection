@@ -24,17 +24,14 @@ class KeywordSpotter:
     def accept_frame(self, frame: bytes) -> str | None:
         import json
 
-        self.recognizer.AcceptWaveform(frame)
-        partial = json.loads(self.recognizer.PartialResult()).get("partial", "")
-        if partial == "comms on":
-            return "start"
-        if partial == "comms off":
-            return "stop"
+        if self.recognizer.AcceptWaveform(frame):
+            text = json.loads(self.recognizer.Result()).get("text", "")
+        else:
+            text = json.loads(self.recognizer.PartialResult()).get("partial", "")
 
-        final_text = json.loads(self.recognizer.Result()).get("text", "")
-        if final_text == "comms on":
+        if text == "comms on":
             return "start"
-        if final_text == "comms off":
+        if text == "comms off":
             return "stop"
         return None
 

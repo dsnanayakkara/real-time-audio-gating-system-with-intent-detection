@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import queue
 import time
 
 from audio_input import AudioConfig, MicStream
@@ -50,7 +51,10 @@ def main() -> None:
 
     try:
         while True:
-            frame = mic.read()
+            try:
+                frame = mic.read()
+            except queue.Empty:
+                continue
             now_ms = int(time.monotonic() * 1000)
             speech = vad.is_speech(frame, cfg.sample_rate)
             if speech:
@@ -66,8 +70,7 @@ def main() -> None:
             if prev_state == GateState.CLOSED and state == GateState.OPEN:
                 for pre in mic.get_preroll():
                     forward_audio(pre, args.simulate_output)
-
-            if state == GateState.OPEN:
+            elif state == GateState.OPEN:
                 forward_audio(frame, args.simulate_output)
 
     except KeyboardInterrupt:
